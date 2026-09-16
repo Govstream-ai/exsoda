@@ -1,6 +1,5 @@
 defmodule Exsoda.Reader do
   alias Exsoda.{Soql, Http}
-  alias HTTPoison.{AsyncResponse, AsyncStatus, AsyncHeaders, AsyncChunk, AsyncEnd}
   alias NimbleCSV.RFC4180, as: CSV
   require Logger
 
@@ -42,7 +41,7 @@ defmodule Exsoda.Reader do
     with {:ok, base} <- Http.base_url(state),
          {:ok, options} <- Http.http_opts(state) do
       "#{base}/views?method=getByIds&#{fourfours}"
-      |> HTTPoison.get(Http.headers(state), options)
+      |> then(&Http.request(:get, &1, Http.headers(state), nil, options))
       |> Http.as_json
     end
   end
@@ -52,7 +51,7 @@ defmodule Exsoda.Reader do
          {:ok, options} <- Http.http_opts(state) do
       query = URI.encode_query(query)
       "#{base}/views/#{Http.encode(fourfour)}.json?#{query}"
-      |> HTTPoison.get(Http.headers(state), options)
+      |> then(&Http.request(:get, &1, Http.headers(state), nil, options))
       |> Http.as_json
     end
   end
@@ -67,9 +66,9 @@ defmodule Exsoda.Reader do
     }
     with {:ok, base} <- Http.base_url(state),
          {:ok, options} <- Http.http_opts(state),
-         {:ok, json} <- Poison.encode(body) do
+         {:ok, json} <- Jason.encode(body) do
       "#{base}/views/#{Http.encode(fourfour)}?method=findTables"
-      |> HTTPoison.post(json, Http.headers(state), options)
+      |> then(&Http.request(:post, &1, Http.headers(state), json, options))
       |> Http.as_json
     end
   end
@@ -78,7 +77,7 @@ defmodule Exsoda.Reader do
     with {:ok, base} <- Http.base_url(state),
          {:ok, options} <- Http.http_opts(state) do
       "#{base}/views/#{Http.encode(fourfour)}.json?method=getRealTableName"
-      |> HTTPoison.get(Http.headers(state), options)
+      |> then(&Http.request(:get, &1, Http.headers(state), nil, options))
       |> Http.as_json
     end
   end
@@ -88,7 +87,7 @@ defmodule Exsoda.Reader do
          {:ok, options} <- Http.http_opts(state) do
       query = URI.encode_query(Map.merge(query, %{"method" => "getLensPublicationGroup", "stage" => "unpublished"}))
       "#{base}/views/#{Http.encode(fourfour)}.json?#{query}"
-      |> HTTPoison.get(Http.headers(state), options)
+      |> then(&Http.request(:get, &1, Http.headers(state), nil, options))
       |> Http.as_json
     end
   end
@@ -98,7 +97,7 @@ defmodule Exsoda.Reader do
          {:ok, options} <- Http.http_opts(state) do
       query = URI.encode_query(Map.merge(query, %{"method" => "getLensPublicationGroup", "stage" => "published"}))
       "#{base}/views/#{Http.encode(fourfour)}.json?#{query}"
-      |> HTTPoison.get(Http.headers(state), options)
+      |> then(&Http.request(:get, &1, Http.headers(state), nil, options))
       |> Http.as_json
     end
   end
@@ -108,7 +107,7 @@ defmodule Exsoda.Reader do
          {:ok, options} <- Http.http_opts(state) do
       query = URI.encode_query(query)
       "#{base}/views/#{Http.encode(fourfour)}/replication.json?#{query}"
-      |> HTTPoison.get(Http.headers(state), options)
+      |> then(&Http.request(:get, &1, Http.headers(state), nil, options))
       |> Http.as_json
     end
   end
@@ -118,7 +117,7 @@ defmodule Exsoda.Reader do
          {:ok, options} <- Http.http_opts(state) do
       query = URI.encode_query(Map.merge(query, %{ "method" => "pending" }))
       "#{base}/geocoding/#{Http.encode(fourfour)}?#{query}"
-      |> HTTPoison.get(Http.headers(state), options)
+      |> then(&Http.request(:get, &1, Http.headers(state), nil, options))
       |> Http.as_json
     end
   end
@@ -137,8 +136,9 @@ defmodule Exsoda.Reader do
       query = URI.encode_query(state.query)
 
       stream = "#{base}/id/#{Http.encode(state.fourfour)}.csv?#{query}"
-      |> HTTPoison.get(Http.headers(state), [{:stream_to, self()} | options])
+      |> then(&Http.request(:get, &1, Http.headers(state), nil, [{:into, :self} | options]))
       |> as_line_stream
+      |> CSV.to_line_stream
       |> CSV.parse_stream(skip_headers: false)
       |> Stream.transform(nil,
         fn
@@ -159,27 +159,7 @@ defmodule Exsoda.Reader do
     end
   end
 
-  defp as_line_stream({:ok, %AsyncResponse{id: ref}}) do
-    Stream.resource(
-      fn -> :ok end,
-      fn state ->
-        receive do
-          %AsyncStatus{id: ^ref, code: _}     -> {[], state}
-          %AsyncHeaders{id: ^ref, headers: _} -> {[], state}
-          %AsyncEnd{id: ^ref}                 -> {:halt, state}
-          %AsyncChunk{id: ^ref, chunk: c}     ->
-            lines = c
-            |> String.split("\n")
-            |> Enum.reject(fn
-              "" -> true
-              _ -> false
-            end)
-            {lines, state}
-        end
-      end,
-      fn _state -> :ok end
-    )
-  end
+  defp as_line_stream({:ok, %Req.Response{body: %Req.Response.Async{} = stream}}), do: stream
 
   defp as_line_stream(failure), do: failure
 

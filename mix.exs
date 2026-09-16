@@ -27,7 +27,7 @@ defmodule Exsoda.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [applications: [:logger, :httpoison, :poison]]
+    [applications: [:logger, :req]]
   end
 
   # Dependencies can be Hex packages:
@@ -41,11 +41,11 @@ defmodule Exsoda.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [
-      {:hackney, "~> 4.0"},
-      {:poison, "~> 2.2"},
+      {:req, "~> 0.7"},
       {:nimble_csv, "~> 1.3"},
       {:ex_doc, ">= 0.0.0", only: :dev},
-      {:elixir_uuid, "~> 1.2"},
+      # Only used in http_test.exs, happy to replace with another
+      {:elixir_uuid, "~> 1.2", only: :test},
       {:plug, "~> 1.8"}
     ]
   end

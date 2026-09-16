@@ -1,6 +1,6 @@
 defmodule ExsodaTest.Writer do
   use ExUnit.Case, async: true
-  alias HTTPoison.Response
+  alias Req.Response
   alias Exsoda.Config
   alias Exsoda.Writer
   alias Exsoda.Reader
@@ -17,7 +17,7 @@ defmodule ExsodaTest.Writer do
   }
 
   def wait_for_replication(fourfour, attempts_left \\ 10) do
-    {:ok, %HTTPoison.Response{body: body}} = Reader.query(fourfour) |>  Reader.replication
+    {:ok, %Response{body: body}} = Reader.query(fourfour) |>  Reader.replication
     case body do
       %{"read_replication_up_to_date" => true} ->
           :done
@@ -216,7 +216,7 @@ defmodule ExsodaTest.Writer do
 
     [{:ok, results}] = results
 
-    assert String.contains?(results.request_url, "this_is_an_option=true")
+    assert String.contains?(Response.get_private(results, :exsoda_request_url), "this_is_an_option=true")
   end
 
   test "can do a streaming replace" do
@@ -408,7 +408,7 @@ defmodule ExsodaTest.Writer do
     |> Writer.run
 
     assert [{:error, response}] = results
-    assert {:ok, %{"message" => "Site scope not enabled", "error" => true}} = Poison.decode(response.body)
+    assert {:ok, %{"message" => "Site scope not enabled", "error" => true}} = Jason.decode(response.body)
   end
 
   test "setting the Permissions blob succeeds" do
@@ -425,7 +425,7 @@ defmodule ExsodaTest.Writer do
     |> Writer.run
 
     assert [{:ok, resp}] = results
-    assert resp.status_code == 200
+    assert resp.status == 200
 
     assert {:ok, %{body: %{"pendingGrants" => [%{"flags" => ["public"]}]}}} = Reader.query(id)
     |> Reader.get_view
@@ -528,7 +528,7 @@ defmodule ExsodaTest.Writer do
     |> Writer.create("a name", %{description: "describes"})
     |> Writer.run
 
-    assert {:ok, %{"code" => "permission_denied", "error" => true}} = Poison.decode(response.body)
-    assert 403 == response.status_code
+    assert {:ok, %{"code" => "permission_denied", "error" => true}} = Jason.decode(response.body)
+    assert 403 == response.status
   end
 end

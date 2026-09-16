@@ -11,7 +11,7 @@ defmodule Exsoda.ApiKeys do
 
     defimpl Execute, for: __MODULE__ do
       def run(%Create{} = c, o) do
-        Http.post("/api_keys", o, Poison.encode!(c))
+        Http.post("/api_keys", o, Jason.encode!(Map.from_struct(c)))
       end
     end
   end

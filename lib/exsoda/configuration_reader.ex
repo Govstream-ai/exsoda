@@ -51,11 +51,8 @@ defmodule Exsoda.ConfigurationReader do
   defp get(path, r, json_opts) do
     with {:ok, base} <- Http.base_url(r),
          {:ok, options} <- Http.http_opts(r) do
-      HTTPoison.get(
-        "#{base}#{path}",
-        Http.headers(r),
-        options
-      ) |> Http.as_json(json_opts)
+      Http.request(:get, "#{base}#{path}", Http.headers(r), nil, options)
+      |> Http.as_json(json_opts)
     end
   end
 end

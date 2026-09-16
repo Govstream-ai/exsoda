@@ -3,7 +3,7 @@ defmodule ExsodaTest.ConfigurationReader do
   alias Exsoda.Config
   alias Exsoda.ConfigurationReader
   alias Exsoda.Configuration
-  alias HTTPoison.Response
+  alias Req.Response
 
   defp expected_state(query) do
     %ConfigurationReader.Query{

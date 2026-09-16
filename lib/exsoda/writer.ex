@@ -12,7 +12,7 @@ defmodule Exsoda.Writer do
       import Exsoda.Util.Column, only: [merge_column: 1]
 
       def run(cc, o) do
-        with {:ok, json} <- Poison.encode(merge_column(cc)) do
+        with {:ok, json} <- Jason.encode(merge_column(cc)) do
           Http.post("/views/#{Http.encode(cc.fourfour)}/columns", o, json)
         end
       end
@@ -24,7 +24,7 @@ defmodule Exsoda.Writer do
 
     defimpl Execute, for: __MODULE__ do
       def run(uc, o) do
-        with {:ok, json} <- Poison.encode(uc.properties) do
+        with {:ok, json} <- Jason.encode(uc.properties) do
           Http.put("/views/#{Http.encode(uc.fourfour)}/columns/#{Http.encode(uc.fieldName)}", o, json)
         end
       end
@@ -40,7 +40,7 @@ defmodule Exsoda.Writer do
 
         data = %{"columns" => Enum.map(ccs, &merge_column/1)}
 
-        with {:ok, json} <- Poison.encode(data) do
+        with {:ok, json} <- Jason.encode(data) do
           case Http.post("/views/#{Http.encode(hd(ccs).fourfour)}/columns?method=multiCreate", o, json) do
             {:ok, list} -> Enum.map(list, fn result -> {:ok, result} end)
             {:error, _} = err -> Enum.map(ccs, fn _ -> err end)
@@ -86,7 +86,7 @@ defmodule Exsoda.Writer do
     defimpl Execute, for: __MODULE__ do
       def run(cv, o) do
         data = Map.merge(cv.properties, %{name: cv.name})
-        with {:ok, json} <- Poison.encode(data) do
+        with {:ok, json} <- Jason.encode(data) do
           params = if cv.deleted_at == nil do "" else "?deleted_at=#{URI.encode(to_string(cv.deleted_at), &URI.char_unreserved?/1)}" end
           Http.post("/views.json" <> params, o, json)
         end
@@ -99,14 +99,14 @@ defmodule Exsoda.Writer do
 
     defimpl Execute, for: __MODULE__ do
       def run(%UpdateView{validate_only: nil} = vv, o) do
-        with {:ok, json} <- Poison.encode(vv.properties) do
+        with {:ok, json} <- Jason.encode(vv.properties) do
           Http.put("/views/#{Http.encode(vv.fourfour)}.json", o, json)
         end
       end
 
 
       def run(%UpdateView{validate_only: validate_only} = vv, o) do
-        with {:ok, json} <- Poison.encode(vv.properties) do
+        with {:ok, json} <- Jason.encode(vv.properties) do
           Http.put("/views/#{Http.encode(vv.fourfour)}.json?validateOnly=#{Http.encode(validate_only)}", o, json)
         end
       end
@@ -118,7 +118,7 @@ defmodule Exsoda.Writer do
 
     defimpl Execute, for: __MODULE__ do
       def run(%UpdateMeasure{} = m, o) do
-        with {:ok, json} <- Poison.encode(m.properties) do
+        with {:ok, json} <- Jason.encode(m.properties) do
           Http.put("/measures_v1/#{Http.encode(m.fourfour)}.json", o, json)
         end
       end
@@ -130,7 +130,7 @@ defmodule Exsoda.Writer do
 
     defimpl Execute, for: __MODULE__ do
       def run(%TransferOwnership{to_user: to_user, view_fourfours: view_fourfours}, o) do
-        with {:ok, json} <- Poison.encode(%{userUid: to_user, viewUids: view_fourfours}) do
+        with {:ok, json} <- Jason.encode(%{userUid: to_user, viewUids: view_fourfours}) do
           Http.put("/views.json?method=bulkTransferOwnership", o, json)
         end
       end
@@ -142,7 +142,7 @@ defmodule Exsoda.Writer do
 
     defimpl Execute, for: __MODULE__ do
       def run(uv, o) do
-        with {:ok, json} <- Poison.encode(uv.properties) do
+        with {:ok, json} <- Jason.encode(uv.properties) do
           Http.put("/views/#{Http.encode(uv.fourfour)}.json?method=validate", o, json)
         end
       end
@@ -154,7 +154,7 @@ defmodule Exsoda.Writer do
 
     defimpl Execute, for: __MODULE__ do
       def run(%Upsert{rows: rows, mode: mode, fourfour: fourfour, options: options}, o) when is_list(rows) do
-        with {:ok, json} <- Poison.encode(rows) do
+        with {:ok, json} <- Jason.encode(rows) do
           url = case options do
             %{} = params ->
               "/id/#{Http.encode(fourfour)}.json?" <> Plug.Conn.Query.encode(params)
@@ -171,8 +171,8 @@ defmodule Exsoda.Writer do
 
       def run(%Upsert{rows: rows, mode: mode, fourfour: fourfour, options: options}, o) do
         with_commas = Stream.transform(rows, false, fn
-          row, false -> {[Poison.encode!(row)], true}
-          row, true  -> {[",\n" <> Poison.encode!(row)], true}
+          row, false -> {[Jason.encode!(row)], true}
+          row, true  -> {[",\n" <> Jason.encode!(row)], true}
         end)
 
         json_stream = Stream.concat(
@@ -201,7 +201,7 @@ defmodule Exsoda.Writer do
 
     defimpl Execute, for: __MODULE__ do
       def run(%Copy{copy_data: copy_data} = copy, o) do
-        json = Poison.encode!(%{})
+        json = Jason.encode!(%{})
         url =
           if copy_data do
             "/views/#{Http.encode(copy.fourfour)}/publication?method=copy"
@@ -218,7 +218,7 @@ defmodule Exsoda.Writer do
 
     defimpl Execute, for: __MODULE__ do
       def run(p, o) do
-        json = Poison.encode!(%{})
+        json = Jason.encode!(%{})
         Http.post("/views/#{Http.encode(p.fourfour)}/publication", o, json)
       end
     end
@@ -229,7 +229,7 @@ defmodule Exsoda.Writer do
 
     defimpl Execute, for: __MODULE__ do
       def run(%Permission{fourfour: fourfour, mode: mode}, o) do
-        with {:ok, json} <- Poison.encode(mode) do
+        with {:ok, json} <- Jason.encode(mode) do
           Http.put("/views/#{Http.encode(fourfour)}?method=setPermission", o, json)
         end
       end
@@ -241,7 +241,7 @@ defmodule Exsoda.Writer do
 
     defimpl Execute, for: __MODULE__ do
       def run(%Permissions{fourfour: fourfour, blob: blob}, o) do
-        with {:ok, json} <- Poison.encode(blob) do
+        with {:ok, json} <- Jason.encode(blob) do
           Http.put("/views/#{fourfour}/permissions", o, json)
         end
       end
@@ -253,17 +253,17 @@ defmodule Exsoda.Writer do
 
     defimpl Execute, for: __MODULE__ do
       def run(%PrepareDraftForImport{fourfour: fourfour, nbe: nil, dici_location: nil}, o) do
-        json = Poison.encode!(%{})
+        json = Jason.encode!(%{})
         Http.patch("/views/#{Http.encode(fourfour)}?method=prepareDraftForImport", o, json)
       end
 
       def run(%PrepareDraftForImport{fourfour: fourfour, nbe: false, dici_location: dici_location}, o) do
-        json = Poison.encode!(%{})
+        json = Jason.encode!(%{})
         Http.patch("/views/#{Http.encode(fourfour)}?method=prepareDraftForImport&nbe=false&diciLocation=#{Http.encode(dici_location)}", o, json)
       end
 
       def run(%PrepareDraftForImport{fourfour: fourfour, nbe: nbe}, o) do
-        json = Poison.encode!(%{})
+        json = Jason.encode!(%{})
         Http.patch("/views/#{Http.encode(fourfour)}?method=prepareDraftForImport&nbe=#{Http.encode(nbe)}", o, json)
       end
     end
@@ -339,7 +339,7 @@ defmodule Exsoda.Writer do
 
     defimpl Execute, for: __MODULE__ do
       def run(%CreateIndex{fourfour: fourfour, index_name: index_name, expressions: expressions}, o) do
-        with {:ok, json} <- Poison.encode(%{"expressions" => expressions}) do
+        with {:ok, json} <- Jason.encode(%{"expressions" => expressions}) do
           Http.put("/views/#{Http.encode(fourfour)}/index/#{Http.encode(index_name)}", o, json)
         end
       end

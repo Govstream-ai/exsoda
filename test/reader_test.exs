@@ -2,7 +2,7 @@ defmodule ExsodaTest.Reader do
   use ExUnit.Case, async: true
   import Exsoda.Reader
   alias Exsoda.Config
-  alias HTTPoison.Response
+  alias Req.Response
 
   defp expected_state(query) do
     %Exsoda.Reader.Query{
@@ -182,7 +182,7 @@ defmodule ExsodaTest.Reader do
     |> offset(5)
     |> run
 
-    assert response.status_code == 404
+    assert response.status == 404
   end
 
   @tag timeout: 10_000
@@ -195,7 +195,7 @@ defmodule ExsodaTest.Reader do
     |> offset(5)
     |> run
 
-    assert %HTTPoison.Error{reason: :nxdomain} = response
+    assert %Req.TransportError{reason: :nxdomain} = response
   end
 
 
