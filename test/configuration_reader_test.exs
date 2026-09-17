@@ -1,6 +1,5 @@
 defmodule ExsodaTest.ConfigurationReader do
   use ExUnit.Case, async: true
-  alias Exsoda.Config
   alias Exsoda.ConfigurationReader
   alias Exsoda.Configuration
   alias Req.Response
@@ -8,8 +7,6 @@ defmodule ExsodaTest.ConfigurationReader do
   defp expected_state(query) do
     %ConfigurationReader.Query{
       opts: %{
-        password: Config.get(:exsoda, :password),
-        account: Config.get(:exsoda, :account),
         domain: "cheetah.test-socrata.com",
         recv_timeout: 5000,
         timeout: 5000,
@@ -40,6 +37,7 @@ defmodule ExsodaTest.ConfigurationReader do
              })
   end
 
+  @tag external: true
   test "can query a config" do
     [ok: %Response{body: body}] =
       ConfigurationReader.query()

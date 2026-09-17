@@ -1,14 +1,11 @@
 defmodule ExsodaTest.Reader do
   use ExUnit.Case, async: true
   import Exsoda.Reader
-  alias Exsoda.Config
   alias Req.Response
 
   defp expected_state(query) do
     %Exsoda.Reader.Query{
       opts: %{
-        password: Config.get(:exsoda, :password),
-        account: Config.get(:exsoda, :account),
         domain: "cheetah.test-socrata.com",
         recv_timeout: 5000,
         timeout: 5000,
@@ -162,7 +159,7 @@ defmodule ExsodaTest.Reader do
 
   # ¯\_(ツ)_/¯  These tests actually make http requests ¯\_(ツ)_/¯
 
-  @tag timeout: 10_000
+  @tag external: true, timeout: 10_000
   test "can actually make a query" do
     {:ok, stream} =
       query("upuy-x277")
@@ -189,7 +186,7 @@ defmodule ExsodaTest.Reader do
            ]
   end
 
-  @tag timeout: 10_000
+  @tag external: true, timeout: 10_000
   test "can query with alt credentials not set via config" do
     {:error, response} =
       query("upuy-x277", domain: "google.com", account: "nope", password: "hunter2")
@@ -203,7 +200,7 @@ defmodule ExsodaTest.Reader do
     assert response.status == 404
   end
 
-  @tag timeout: 10_000
+  @tag external: true, timeout: 10_000
   test "can query with host from environment variables" do
     {:error, response} =
       query("upuy-x277", host: {:system, "FOOFOO", "blah"})
@@ -217,7 +214,7 @@ defmodule ExsodaTest.Reader do
     assert %Req.TransportError{reason: :nxdomain} = response
   end
 
-  @tag timeout: 10_000
+  @tag external: true, timeout: 10_000
   test "can get a view" do
     {:ok, %Response{body: view}} =
       query("upuy-x277")
