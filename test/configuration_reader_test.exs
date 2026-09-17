@@ -25,22 +25,32 @@ defmodule ExsodaTest.ConfigurationReader do
   end
 
   test "can make a config query" do
-    result = ConfigurationReader.query
-    |> ConfigurationReader.get_config("bleh", %ConfigurationReader.GetConfig{default_only: 5,
-                                                                             merge: "haha"})
-    assert result == expected_state(%ConfigurationReader.GetConfig{type: "bleh",
-                                                                   default_only: 5,
-                                                                   merge: "haha"})
+    result =
+      ConfigurationReader.query()
+      |> ConfigurationReader.get_config("bleh", %ConfigurationReader.GetConfig{
+        default_only: 5,
+        merge: "haha"
+      })
+
+    assert result ==
+             expected_state(%ConfigurationReader.GetConfig{
+               type: "bleh",
+               default_only: 5,
+               merge: "haha"
+             })
   end
 
   test "can query a config" do
-    [ok: %Response{body: body}] = ConfigurationReader.query
-    |> ConfigurationReader.get_config("view_categories", %ConfigurationReader.GetConfig{merge: true})
-    |> ConfigurationReader.run
+    [ok: %Response{body: body}] =
+      ConfigurationReader.query()
+      |> ConfigurationReader.get_config("view_categories", %ConfigurationReader.GetConfig{
+        merge: true
+      })
+      |> ConfigurationReader.run()
 
     assert [
-      %Configuration{id: 1, name: "View categories", type: "view_categories"},
-      %Configuration{id: 897, name: "View categories", type: "view_categories"}
-    ] = body
+             %Configuration{id: 1, name: "View categories", type: "view_categories"},
+             %Configuration{id: 897, name: "View categories", type: "view_categories"}
+           ] = body
   end
 end

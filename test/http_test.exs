@@ -13,7 +13,9 @@ defmodule ExsodaTest.Http do
   end
 
   test "can make a base url with function as host" do
-    actual = Http.base_url(%{opts: %{host: fn -> {:ok, "foo"} end, api_root: "/api", protocol: "https"}})
+    actual =
+      Http.base_url(%{opts: %{host: fn -> {:ok, "foo"} end, api_root: "/api", protocol: "https"}})
+
     assert actual == {:ok, "https://foo/api"}
   end
 
@@ -28,16 +30,23 @@ defmodule ExsodaTest.Http do
   end
 
   test "can override user_agent and request_id options" do
-    overriden_options = Http.options([{:user_agent, "test-agent"}, {:request_id, "different-fake-uuid"}])
+    overriden_options =
+      Http.options([{:user_agent, "test-agent"}, {:request_id, "different-fake-uuid"}])
+
     assert overriden_options.user_agent == "test-agent"
     assert overriden_options.request_id == "different-fake-uuid"
-
   end
 
   test "can supply url parameters" do
-    overriden_options = Http.options([{:user_agent, "test-agent"}, {:request_id, "different-fake-uuid"}, {:params, %{"p1" => "v1", "p2" =>"v2"}}])
+    overriden_options =
+      Http.options([
+        {:user_agent, "test-agent"},
+        {:request_id, "different-fake-uuid"},
+        {:params, %{"p1" => "v1", "p2" => "v2"}}
+      ])
+
     assert overriden_options.user_agent == "test-agent"
     assert overriden_options.request_id == "different-fake-uuid"
-    assert overriden_options.params == %{"p1" => "v1", "p2" =>"v2"}
+    assert overriden_options.params == %{"p1" => "v1", "p2" => "v2"}
   end
 end

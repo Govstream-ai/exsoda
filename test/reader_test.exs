@@ -20,192 +20,209 @@ defmodule ExsodaTest.Reader do
         params: []
       },
       fourfour: "four-four",
-      query: query}
+      query: query
+    }
   end
 
   test "can make a selection" do
-    result = query("four-four")
-    |> select([:region, :magnitude])
+    result =
+      query("four-four")
+      |> select([:region, :magnitude])
 
     assert result == expected_state(%{"$select" => "region, magnitude"})
   end
 
   test "can make a where" do
-    result = query("four-four")
-    |> select([:region, :magnitude])
-    |> where("magnitude > 4.0")
+    result =
+      query("four-four")
+      |> select([:region, :magnitude])
+      |> where("magnitude > 4.0")
 
-    assert result == expected_state(%{
-      "$select" => "region, magnitude",
-      "$where" => "magnitude > 4.0"
-    })
+    assert result ==
+             expected_state(%{
+               "$select" => "region, magnitude",
+               "$where" => "magnitude > 4.0"
+             })
   end
 
   test "can make an order" do
-    result = query("four-four")
-    |> select([:region, :magnitude])
-    |> where("magnitude > 4.0")
-    |> order("region")
+    result =
+      query("four-four")
+      |> select([:region, :magnitude])
+      |> where("magnitude > 4.0")
+      |> order("region")
 
-    assert result == expected_state(%{
-      "$select" => "region, magnitude",
-      "$where" => "magnitude > 4.0",
-      "$order" => "region"
-    })
+    assert result ==
+             expected_state(%{
+               "$select" => "region, magnitude",
+               "$where" => "magnitude > 4.0",
+               "$order" => "region"
+             })
   end
 
   test "can make an ascending order" do
-    result = query("four-four")
-    |> select([:region, :magnitude])
-    |> where("magnitude > 4.0")
-    |> order("region", :asc)
+    result =
+      query("four-four")
+      |> select([:region, :magnitude])
+      |> where("magnitude > 4.0")
+      |> order("region", :asc)
 
-    assert result == expected_state(%{
-      "$select" => "region, magnitude",
-      "$where" => "magnitude > 4.0",
-      "$order" => "region ASC"
-    })
+    assert result ==
+             expected_state(%{
+               "$select" => "region, magnitude",
+               "$where" => "magnitude > 4.0",
+               "$order" => "region ASC"
+             })
   end
 
   test "can make a descending order" do
-    result = query("four-four")
-    |> select([:region, :magnitude])
-    |> where("magnitude > 4.0")
-    |> order("region", :desc)
+    result =
+      query("four-four")
+      |> select([:region, :magnitude])
+      |> where("magnitude > 4.0")
+      |> order("region", :desc)
 
-    assert result == expected_state(%{
-      "$select" => "region, magnitude",
-      "$where" => "magnitude > 4.0",
-      "$order" => "region DESC"
-    })
+    assert result ==
+             expected_state(%{
+               "$select" => "region, magnitude",
+               "$where" => "magnitude > 4.0",
+               "$order" => "region DESC"
+             })
   end
 
-
   test "can make an limit" do
-    result = query("four-four")
-    |> select([:region, :magnitude])
-    |> where("magnitude > 4.0")
-    |> order("region")
-    |> limit(5)
+    result =
+      query("four-four")
+      |> select([:region, :magnitude])
+      |> where("magnitude > 4.0")
+      |> order("region")
+      |> limit(5)
 
-    assert result == expected_state(%{
-      "$select" => "region, magnitude",
-      "$where" => "magnitude > 4.0",
-      "$order" => "region",
-      "$limit" => 5
-    })
+    assert result ==
+             expected_state(%{
+               "$select" => "region, magnitude",
+               "$where" => "magnitude > 4.0",
+               "$order" => "region",
+               "$limit" => 5
+             })
   end
 
   test "can make an offset" do
-    result = query("four-four")
-    |> select([:region, :magnitude])
-    |> where("magnitude > 4.0")
-    |> order("region")
-    |> limit(5)
-    |> offset(5)
+    result =
+      query("four-four")
+      |> select([:region, :magnitude])
+      |> where("magnitude > 4.0")
+      |> order("region")
+      |> limit(5)
+      |> offset(5)
 
-    assert result == expected_state(%{
-      "$select" => "region, magnitude",
-      "$where" => "magnitude > 4.0",
-      "$order" => "region",
-      "$limit" => 5,
-      "$offset" => 5
-    })
+    assert result ==
+             expected_state(%{
+               "$select" => "region, magnitude",
+               "$where" => "magnitude > 4.0",
+               "$order" => "region",
+               "$limit" => 5,
+               "$offset" => 5
+             })
   end
 
-
   test "can make a group" do
-    result = query("four-four")
-    |> select([:region, :magnitude])
-    |> where("magnitude > 4.0")
-    |> order("region")
-    |> offset(5)
-    |> limit(5)
-    |> group("foo")
+    result =
+      query("four-four")
+      |> select([:region, :magnitude])
+      |> where("magnitude > 4.0")
+      |> order("region")
+      |> offset(5)
+      |> limit(5)
+      |> group("foo")
 
-    assert result == expected_state(%{
-      "$select" => "region, magnitude",
-      "$where" => "magnitude > 4.0",
-      "$order" => "region",
-      "$limit" => 5,
-      "$offset" => 5,
-      "$group" => "foo"
-    })
+    assert result ==
+             expected_state(%{
+               "$select" => "region, magnitude",
+               "$where" => "magnitude > 4.0",
+               "$order" => "region",
+               "$limit" => 5,
+               "$offset" => 5,
+               "$group" => "foo"
+             })
   end
 
   test "can make a fulltext query" do
-    result = query("four-four")
-    |> select([:region, :magnitude])
-    |> q("foobar")
+    result =
+      query("four-four")
+      |> select([:region, :magnitude])
+      |> q("foobar")
 
-    assert result == expected_state(%{
-      "$select" => "region, magnitude",
-      "$q" => "foobar"
-    })
+    assert result ==
+             expected_state(%{
+               "$select" => "region, magnitude",
+               "$q" => "foobar"
+             })
   end
 
   # ¯\_(ツ)_/¯  These tests actually make http requests ¯\_(ツ)_/¯
 
   @tag timeout: 10_000
   test "can actually make a query" do
-    {:ok, stream} = query("upuy-x277")
-    |> select([:region, :magnitude])
-    |> where("magnitude > 4.0")
-    |> order("region")
-    |> limit(10)
-    |> offset(5)
-    |> run
+    {:ok, stream} =
+      query("upuy-x277")
+      |> select([:region, :magnitude])
+      |> where("magnitude > 4.0")
+      |> order("region")
+      |> limit(10)
+      |> offset(5)
+      |> run
 
     result = Enum.into(stream, [])
 
     assert result == [
-      [{"region", "0km SE of Sakai, Japan"}, {"magnitude", "4.6"}],
-      [{"region", "0km SE of Sakai, Japan"}, {"magnitude", "4.6"}],
-      [{"region", "0km SE of Sakai, Japan"}, {"magnitude", "4.6"}],
-      [{"region", "0km SE of Sakai, Japan"}, {"magnitude", "4.6"}],
-      [{"region", "0km SE of Sakai, Japan"}, {"magnitude", "4.6"}],
-      [{"region", "100km E of Ile Hunter, New Caledonia"}, {"magnitude", "5.6"}],
-      [{"region", "100km E of Ile Hunter, New Caledonia"}, {"magnitude", "5.6"}],
-      [{"region", "100km E of Ile Hunter, New Caledonia"}, {"magnitude", "5.6"}],
-      [{"region", "100km E of Ile Hunter, New Caledonia"}, {"magnitude", "5.6"}],
-      [{"region", "100km E of Ile Hunter, New Caledonia"}, {"magnitude", "5.6"}]
-    ]
+             [{"region", "0km SE of Sakai, Japan"}, {"magnitude", "4.6"}],
+             [{"region", "0km SE of Sakai, Japan"}, {"magnitude", "4.6"}],
+             [{"region", "0km SE of Sakai, Japan"}, {"magnitude", "4.6"}],
+             [{"region", "0km SE of Sakai, Japan"}, {"magnitude", "4.6"}],
+             [{"region", "0km SE of Sakai, Japan"}, {"magnitude", "4.6"}],
+             [{"region", "100km E of Ile Hunter, New Caledonia"}, {"magnitude", "5.6"}],
+             [{"region", "100km E of Ile Hunter, New Caledonia"}, {"magnitude", "5.6"}],
+             [{"region", "100km E of Ile Hunter, New Caledonia"}, {"magnitude", "5.6"}],
+             [{"region", "100km E of Ile Hunter, New Caledonia"}, {"magnitude", "5.6"}],
+             [{"region", "100km E of Ile Hunter, New Caledonia"}, {"magnitude", "5.6"}]
+           ]
   end
 
   @tag timeout: 10_000
   test "can query with alt credentials not set via config" do
-    {:error, response} = query("upuy-x277", domain: "google.com", account: "nope", password: "hunter2")
-    |> select([:region, :magnitude])
-    |> where("magnitude > 4.0")
-    |> order("region")
-    |> limit(5)
-    |> offset(5)
-    |> run
+    {:error, response} =
+      query("upuy-x277", domain: "google.com", account: "nope", password: "hunter2")
+      |> select([:region, :magnitude])
+      |> where("magnitude > 4.0")
+      |> order("region")
+      |> limit(5)
+      |> offset(5)
+      |> run
 
     assert response.status == 404
   end
 
   @tag timeout: 10_000
   test "can query with host from environment variables" do
-    {:error, response} = query("upuy-x277", host: {:system, "FOOFOO", "blah"})
-    |> select([:region, :magnitude])
-    |> where("magnitude > 4.0")
-    |> order("region")
-    |> limit(5)
-    |> offset(5)
-    |> run
+    {:error, response} =
+      query("upuy-x277", host: {:system, "FOOFOO", "blah"})
+      |> select([:region, :magnitude])
+      |> where("magnitude > 4.0")
+      |> order("region")
+      |> limit(5)
+      |> offset(5)
+      |> run
 
     assert %Req.TransportError{reason: :nxdomain} = response
   end
 
-
   @tag timeout: 10_000
   test "can get a view" do
-    {:ok, %Response{body: view}} = query("upuy-x277")
-    |> get_view
+    {:ok, %Response{body: view}} =
+      query("upuy-x277")
+      |> get_view
 
     assert view["id"] == "upuy-x277"
   end
-
-
 end
